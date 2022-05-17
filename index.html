@@ -1,0 +1,402 @@
+<html>
+
+<head>
+  <title>Disaster strikes</title>
+  <script src="https://unpkg.com/vue@next"></script>
+  <script src="https://unpkg.com/vuex@4"></script>
+  <script src="https://unpkg.com/vue-router@4"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <style>
+    .active {
+      color: red;
+    }
+
+    body {
+      font-size: 24px;
+    }
+
+    a {
+      padding: 10px;
+    }
+
+    td,
+    tr,
+    th,
+    table {
+      border: 2px solid black;
+      padding: 20px;
+      font-size: 32px;
+    }
+
+    table {
+      border-collapse: collapse;
+    }
+    ul li a {
+    text-decoration: none;
+    list-style: none;
+    list-style-type: none;
+}
+    .card {
+      /* Add shadows to create the "card" effect */
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+      display: flex;     
+      padding-top: 20;
+      margin-bottom: 30;
+    }
+
+    /* On mouse-over, add a deeper shadow */
+    .card:hover {
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    /* Add some padding inside the card container */
+    .container {
+      padding-top: 20;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <div class="container">
+    <div class="row">
+      <ul style="list-style-type: none; text-align-last: center;">
+        <div class="col">
+        <li>
+          <router-link class="nav-link" active-class="active" to="/home">Home</router-link>
+        </li>
+      </div>
+      <div class="col">
+        <li>
+          <router-link class="nav-link" active-class="active" to="/liveFeed">Live Feed</router-link>
+        </li>
+      </div>
+        <div class="col">
+        <li>
+          <router-link class="nav-link" active-class="active" to="/analytics">Analytics</router-link>
+        </li>
+      </div>
+      </ul>
+    </div>
+</div>
+    <router-view></router-view>
+  
+  </div>
+
+  <script>
+
+    var socket = io();
+    const plugin = function createWebSocketPlugin() {
+      return (store) => {
+        socket.on("post", data => {
+          store.commit("liveFeedData", data);
+        });
+      };
+    };
+    const store = Vuex.createStore({
+      state() {
+        return {
+          feed: [],
+        };
+      },
+
+      mutations: {
+        liveFeedData(state, data) {
+          state.feed.push(data);
+        },
+      },
+
+      plugins: [plugin()],
+    });
+    //HAS ALL DATA
+    //<div><p>{{liveFeedData}}</p></div>
+    const Analytics = {
+      template:
+
+
+        `<div><p>Analyitics Page</p></div>
+      <table>
+        <tr>
+        <th></th>
+        <th>Fire</th>
+        <th>Flood</th>
+        <th>Power</th>
+        <th>Medical</th>
+        <th>Total</th>
+        </tr>
+        <tr>
+       
+          <td>Low</td>
+          <td>{{this.LowFire}}</td>
+          <td>{{this.LowFlood}}</td>
+          <td>{{this.HighPower}}</td>
+          <td>{{this.CriticalFlood}}</td>
+          <td>{{this.LowPrio}}</td>
+          </tr>
+          <tr>
+       
+          <td>Medium</td>
+          <td>{{this.MediumFire}}</td>
+          <td>{{this.MediumFlood}}</td>
+          <td>{{this.MediumPower}}</td>
+          <td>{{this.MediumMedical}}</td>
+          <td>{{this.MediumPrio}}</td>
+          </tr>
+          <tr>
+    
+          <td>High</td>
+          <td>{{this.HighFire}}</td>
+          <td>{{this.HighFlood}}</td>
+          <td>{{this.HighPower}}</td>
+          <td>{{this.HighMedical}}</td>
+          <td>{{this.HighPrio}}</td>
+          </tr>
+          <tr>
+         
+          <td>Critical</td>
+          <td>{{this.CriticalFire}}</td>
+          <td>{{this.CriticalFlood}}</td>
+          <td>{{this.CriticalPower}}</td>
+          <td>{{this.CriticalMedical}}</td>
+          <td>{{this.CriticalPrio}}</td>
+          </tr>
+          <tr>
+         
+          <td>Total</td>
+          <td>{{this.TotalFire}}</td>
+          <td>{{this.TotalFlood}}</td>
+          <td>{{this.TotalPower}}</td>
+          <td>{{this.TotalMedical}}</td>
+          <td>{{this.TotalTotal}}</td>
+          </tr>
+        </table>
+      
+      `,
+      data() {
+        return {
+          totalFire: 0
+        };
+      },
+
+      computed: {
+        //COMPUTED PROPERTIES FOR FIRE
+        LowFire() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Fire" && dude.priority == "Low").length
+        },
+        MediumFire() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Fire" && dude.priority == "Medium").length
+        },
+        HighFire() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Fire" && dude.priority == "High").length
+        },
+        CriticalFire() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Fire" && dude.priority == "Critical").length
+        },
+        TotalFire() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Fire").length
+        },
+
+        //COMPUTED PROPERTIES FOR FLOOD
+        LowFlood() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Flood" && dude.priority == "Low").length
+        },
+        MediumFlood() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Flood" && dude.priority == "Medium").length
+        },
+        HighFlood() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Flood" && dude.priority == "High").length
+        },
+        CriticalFlood() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Flood" && dude.priority == "Critical").length
+        },
+        TotalFlood() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Flood").length
+        },
+        //COMPUTED PROPERTIES FOR POWER
+        LowPower() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Power" && dude.priority == "Low").length
+        },
+        MediumPower() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Power" && dude.priority == "Medium").length
+        },
+        HighPower() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Power" && dude.priority == "High").length
+        },
+        CriticalPower() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Power" && dude.priority == "Critical").length
+        },
+        TotalPower() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Power").length
+        },
+        //COMPUTED PROPERTIES FOR MEDICAL
+        LowMedical() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Medical" && dude.priority == "Low").length
+        },
+        MediumMedical() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Medical" && dude.priority == "Medium").length
+        },
+        HighMedical() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Medical" && dude.priority == "High").length
+        },
+        CriticalMedical() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Medical" && dude.priority == "Critical").length
+        },
+        TotalMedical() {
+          return this.$store.state.feed.filter(dude => dude.problem == "Medical").length
+        },
+
+        //COMPUTED PROPERTIES FOR PRIORITY TOTALS
+        LowPrio() {
+          return this.$store.state.feed.filter(dude =>  dude.priority == "Low").length
+        },
+        MediumPrio() {
+          return this.$store.state.feed.filter(dude =>  dude.priority == "Medium").length
+        },
+        HighPrio() {
+          return this.$store.state.feed.filter(dude => dude.priority == "High").length
+        },
+        CriticalPrio() {
+          return this.$store.state.feed.filter(dude =>  dude.priority == "Critical").length
+        },
+        
+        //COMPUTED PROPERTIES FOR ALL TOTALS EVERY POST
+        TotalTotal(){
+          return this.$store.state.feed.length
+        },
+      }
+
+
+
+
+
+    };
+    const Home = {
+      template:
+        "<div><p>Home Page</p></div><div><p>This website features a live disaster reporting system and displays them in the live feed.</p></div>"
+
+    };
+    const LiveFeed = {
+      template: `
+      
+		<div style="text-align-last: center;">
+			<input type="checkbox" v-model="isFireToggled"> Fire
+			<input type="checkbox" v-model="isMedicalToggled"> Medical
+      <input type="checkbox" v-model="isFloodToggled"> Flood
+      <input type="checkbox" v-model="isPowerToggled"> Power
+		</div>
+    <div style="text-align-last: center;">
+			<input type="checkbox" v-model="isProblemLow"> Low
+			<input type="checkbox" v-model="isProblemMedium"> Medium
+      <input type="checkbox" v-model="isProblemHigh"> High
+      <input type="checkbox" v-model="isProblemCritical"> Critical
+		</div>
+    <div class="Container" >
+      <div class="row">
+      <div class="card"  v-for="posts in feed">
+        <div class="col">
+        <img :src="posts.image" width="200" height="200" style="align-self: self-end;"/>
+        </div>
+        <div class="col">
+        <ul style="list-style: none;">
+          <li> Name: {{posts.name}}</li>
+          
+          <li> Problem: {{posts.problem}}</li>
+          <li> Priority: {{posts.priority}}</li>
+          <li> Content: {{posts.content}}</li>
+          </ul>
+          </div>
+         
+        </div>
+       </div>
+       </div>
+      `,
+      data() {
+        return {
+          isFireToggled: true,
+          isMedicalToggled: true,
+          isPowerToggled: true,
+          isFloodToggled: true,
+          isProblemLow: true,
+          isProblemMedium: true,
+          isProblemHigh: true,
+          isProblemCritical: true,
+        };
+      },
+      computed: {
+        feed() {
+          var finalArray = [];
+          //FILTER BY PROBLEM FIRST
+          if (this.isFireToggled) {
+            finalArray.push(...store.state.feed.filter(element => element.problem == 'Fire'))
+
+          }
+
+          if (this.isMedicalToggled) {
+            finalArray.push(...store.state.feed.filter(el => el.problem == 'Medical'))
+
+          }
+          if (this.isPowerToggled) {
+            finalArray.push(...store.state.feed.filter(el => el.problem == 'Power'))
+
+          }
+          if (this.isFloodToggled) {
+            finalArray.push(...store.state.feed.filter(el => el.problem == 'Flood'))
+
+          }
+          //FILTER BY PRIORITY SECOND TO AVOID DUPLICATE
+          if (this.isProblemLow) {
+            finalArray.push(...store.state.feed.filter(element => element.priority == 'Low'))
+
+          }
+
+          if (this.isProblemMedium) {
+            finalArray.push(...store.state.feed.filter(el => el.priority == 'Medium'))
+
+          }
+          if (this.isProblemHigh) {
+            finalArray.push(...store.state.feed.filter(el => el.priority == 'High'))
+
+          }
+          if (this.isProblemCritical) {
+            finalArray.push(...store.state.feed.filter(el => el.priority == 'Critical'))
+
+          }
+
+          console.log(finalArray)
+          return finalArray;
+
+        },
+
+
+      },
+    };
+
+    const routes = [
+      { path: "/home", component: Home },
+      { path: "/Analytics", component: Analytics },
+      { path: "/LiveFeed", component: LiveFeed },
+    ];
+    const router = VueRouter.createRouter({
+      history: VueRouter.createWebHashHistory(),
+      routes,
+    });
+
+    const app = Vue.createApp({
+      computed: {
+        feed() {
+          return this.$store.state.feed;
+        }
+      }
+    });
+
+
+    app.use(router);
+    app.use(store);
+    app.mount("#app");
+  </script>
+</body>
+
+</html>
